@@ -28,39 +28,23 @@ kun je ook een ambtenaar kiezen?
 
 ## Scherm 1: Huwelijk of geregistreerd partnerschap?
 
-Bekijk prototype
+[Bekijk prototype ]()
 
-3
 
-•
-•
-
-•
-Keuze verbintenis:
+**Keuze verbintenis**:
 ik wil trouwen
 ik wil een geregistreerd partnerschap
 POST API:
 
-Deze gegevens worden opgestuurd:
+**Deze gegevens worden opgestuurd**:
 identifier voor keuze tussen trouwen of geregistreerd partnerschap
 Er zijn afspraken nodig over de identifier van het type.
 
 ## Scherm 2: datum kiezen
 
-Bekijk prototype
+[Bekijk prototype ]()
 
-4
 
-•
-
-•
-•
-•
-
-•
-•
-•
-•
 Rekening houden met:
 Datum moet zijn nadat beide personen 18 zijn (persoonsgegevens zijn echter
 nog niet beschikbaar in deze stap)
@@ -76,23 +60,7 @@ begindatum (optioneel, anders vanaf vandaag + minimumtijd - nu 14 dagen)
 einddatum (optioneel, anders uiterste datum in toekomst - nu maximaal 1 jaar
 in de toekomst)
 
-5
 
-•
-•
-
-•
-•
-•
-
-•
-•
-•
-
-•
-•
-
-•
 Response:
 lijst met unieke combinaties van datum + tijdstip + type
 extra velden: locatie
@@ -111,7 +79,8 @@ type
 
 ## Scherm 3: overzicht keuze, door naar DigiD
 
-Bekijk prototype
+[Bekijk prototype ]()
+
 Overzicht:
 keuze product
 datum en tijdstip
@@ -121,15 +90,7 @@ Opmerking:
 op dit punt kun je al een QR-code tonen zodat de partner ook kan inloggen,
 zodat je het echt "tegelijk en samen doet"
 
-6
 
-•
-•
-•
-•
-
-•
-•
 
 GET API:
 Deze informatie is nodig om de pagina te tonen:
@@ -151,21 +112,14 @@ DigiD is down.
 
 ### Scherm: inloggen met DigiD
 
-Bekijk prototype
+[Bekijk prototype ]()
 
-7
 
-Scherm: inloggen bij DigiD
+## Scherm: inloggen bij DigiD
 
-Bekijk prototype
+[Bekijk prototype ]()
 
-8
 
-•
-•
-
-•
-•
 ## Scherm 4: contactgegevens invullen en gegevens controleren
 Deze pagina toont ter controle:
 Overzicht persoonsgegevens
@@ -173,30 +127,10 @@ Overzicht adresgegevens:
 Geeft de mogelijkheid voor persoon 1 voor het aanvullen van contactgegevens:
 telefoonnummer (optioneel, voor bijvoorbeeld Doven)
 e-mailadres
-Bekijk prototype
 
-9
+[Bekijk prototype ]()
 
-10
 
-•
-•
-•
-•
-•
-•
-•
-•
-•
-•
-•
-•
-•
-•
-•
-
-•
-•
 
 GET API:
 De volgende gegevens zijn nodig om de pagina te tonen:
@@ -223,13 +157,9 @@ e-mailadres - verplicht
 
 ## Scherm 5: partner uitnodigen
 
-Bekijk prototype
+[Bekijk prototype ]()
 
-11
 
-•
-
-•
 Opmerkingen:
 
 kan misschien met QR code in plaats van link in e-mail, geen latency, geen junk-
@@ -237,23 +167,15 @@ mail risico
 
 persoonsgegevens van partner komen uit DigiD, ipv zelf ingevuld
 
-### Scherm: getuigen aanmelden
+## Scherm: getuigen aanmelden
 
-Bekijk prototype
+[Bekijk prototype ]()
 
-12
 
-13
 
-•
+## Scherm: controles uitgevoerd
 
-•
-•
-•
-
-Scherm: controles uitgevoerd
-
-Bekijk prototype
+[Bekijk prototype ]()
 
 Happy flow: alle controles zijn geslaagd
 Unhappy flow
@@ -264,29 +186,20 @@ lijst van checks
 beschrijving controle
 geslaagd / niet geslaagd
 
-14
 POST API
 
 Deze pagina verstuurt zelf geen informatie, maar de server moet wel weten naar
 welke URLs geredirect moet worden na een succesvolle of mislukte betaling.
 
-### Scherm: wachten op partner
+## Scherm: wachten op partner
 
-Bekijk prototype
+[Bekijk prototype ]()
 
 Unhappy flow
 
 Reservering verlopen.
 
-15
 
-•
-•
-•
-•
-
-•
-•
 
 GET API
 
@@ -301,20 +214,9 @@ e-mailadres partners
 
 ### Scherm: betaling gelukt
 
-Bekijk prototype
+[Bekijk prototype ]()
 
-16
 
-17
-
-•
-
-•
-
-•
-•
-•
-•
 
 GET API
 
@@ -331,12 +233,7 @@ naam 2
 datum en tijdstip
 locatie
 
-18
 
-•
-•
-•
-•
 type
 laatste datum getuigen melden
 laatste datum extra's bestellen
@@ -344,17 +241,13 @@ URL om reservering te bekijken
 
 ### Scherm: getuigen aanpassen
 
-Bekijk prototype
+[Bekijk prototype ]()
 
-19
 
-20
-
-•
 
 ### Scherm: extra bestellen
 
-Bekijk prototype
+[Bekijk prototype ]()
 
 Bijvoorbeeld, een huwelijksboekje bestellen en gelijk betalen.
 Opmerking: is dit nog achteraf te wijzigen? Betaal je dan het bedrag voor het
@@ -366,15 +259,6 @@ GET API:
 Lijst extra producten, met varianten:
 product naam (bijv. trouwboekje)
 
-21
-
-•
-•
-•
-•
-•
-
-•
 product ID
 mogelijke varianten (rood leder / zwart leder / blauw textiel / naturel karton):
 variant titel
@@ -396,12 +280,7 @@ duidelijker om "Annuleren" (secondary button) en "Geen huwelijk reserveren"
 
 ###Scherm: bevestiging annulering
 
-Bekijk prototype
-
-22
-
-•
-•
+[Bekijk prototype ]()
 
 E-mail: bevestiging annulering
 
@@ -416,23 +295,4 @@ Security-Policy . We willen kiezen om een server-side rendering te doen met
 
 React, zodat we een nonce kunnen genereren voor elke pagina.
 
-23
-
-•
-
-•
-
-•
-
-•
-
-•
-
-•
-
-•
-
-•
-
-•
 
