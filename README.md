@@ -247,13 +247,13 @@ URL om reservering te bekijken
 
 ### Scherm: getuigen aanpassen
 
-[Bekijk prototype ]()
+[Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/11-getuigen-wijzig.html)
 
 
 
 ### Scherm: extra bestellen
 
-[Bekijk prototype ]()
+[Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/11b-extra.html)
 
 Bijvoorbeeld, een huwelijksboekje bestellen en gelijk betalen.
 Opmerking: is dit nog achteraf te wijzigen? Betaal je dan het bedrag voor het
@@ -286,7 +286,7 @@ duidelijker om "Annuleren" (secondary button) en "Geen huwelijk reserveren"
 
 ###Scherm: bevestiging annulering
 
-[Bekijk prototype ]()
+[Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/12-huwelijk-geannuleerd.html)
 
 E-mail: bevestiging annulering
 
