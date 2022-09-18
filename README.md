@@ -16,7 +16,7 @@ In de volgende stappen worden de benodigd API calls per stap doorgelicht
 - [Scherm: betaling gelukt](#scherm-betaling-gelukt)
 - [Scherm: getuigen aanpassen](#scherm-getuigen-aanpassen)
 - [Scherm: extra bestellen](#scherm-extra-bestellen)
-- [Scherm: annuleer reservering](h#scherm-annuleer-reservering)
+- [Scherm: annuleer reservering](#scherm-annuleer-reservering)
 
 ### Scherm 0: Introductie
 
