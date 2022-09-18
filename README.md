@@ -573,7 +573,7 @@ PUT {environment}/api/huwelijk/{id}
         "klant":"{uri of geheel klantobject}"
       }
     ],    
-    "{uri partner 1}":[
+    "{uri partner 2}":[
       {
         "name":"Getuige bij huwelijk",
         "description":"U wordt uitgenodigd als getuige bij een huwlijk",
