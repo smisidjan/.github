@@ -42,6 +42,26 @@ In de volgende stappen worden de benodigd API calls per stap doorgelicht
 **Opmerking**:
 - kun je ook een ambtenaar kiezen?
 
+> De backend gaat uit van één huwelijks object wat gedurende de klantreis word aangepast en gevalideerd. Dat leid ertoe dat veel van de genoemde POST calls uit dit stuk voor de backend eignelijk PUT operaties zijn op een loppend huwelijk
+
+```json  
+POST {environment}/api/huwelijken
+
+{
+}
+
+RESPONCE
+
+{
+  ... het volledige huwelijks object.
+}
+```
+
+**Acceptatie critteria Backend**
+- [ ] Er kan een leeg huwelijsk object worden aangemaakt aan het begin van de sessie
+- [ ] Huwelijks objecten die niet binnen een logische sessie duratie (zeggen 1 week) tenminste een eigenaar (partner) krijgen worden verwijderd
+
+
 ### Scherm 1: Huwelijk of geregistreerd partnerschap?
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/01-trouwen-of-partnerschap.html)
@@ -50,13 +70,38 @@ In de volgende stappen worden de benodigd API calls per stap doorgelicht
 
 **Keuze verbintenis**:
 - ik wil trouwen
-- ik wil een geregistreerd partnerschap
+- ik wil een geregistreerd partnerschaptrouwen
+- ik wil een omzetting <- RLI de backend ondersteund dit nu wel
 
 **POST API**:
 
 **Deze gegevens worden opgestuurd**:
 - identifier voor keuze tussen trouwen of geregistreerd partnerschap
 - Er zijn afspraken nodig over de identifier van het type.
+
+> Op dit moment is het type huwelijk voor de backend een enum waarbij de mogenlijke waarde zijn "huwelijk","partnerschap","omzetting"
+> 
+> **Vragen**
+> - Is het type van het huwelijk achteraf nog aan te passen?
+
+```json  
+PUT {environment}/api/huwelijken/{id}
+
+{
+  "type":"{het gekozen type ge-identificeerd als enum}"
+}
+
+RESPONCE
+
+{
+  ... het volledige huwelijks object.
+}
+```
+
+**Acceptatie critteria Backend**
+- [ ] Het type van het huwelijk kan worden gezet zonder in te loggen (`hoe gaan we valideren dat je wel de eigenaar bent? lopende sessie?`)
+
+
 
 ### Scherm 2: datum kiezen
 
@@ -90,11 +135,236 @@ type
 "geregistreerd partnerschap" - "flitshuwelijk" - "gratis huwelijk" - "eenvoudig
 huwelijk" - "uitgebreid huwelijk"
 
+> **Vragen**
+> - Is de interval nu altijd hetzelfde? in het verleden verschilde de nagelang product
+> 
+> Deze api is een beetje complex, dus wat pointers
+> - Starttijd is een datetime
+> - Stoptijd is een datetime
+> - Interval is een PHP interval value en bepaald de groote van de blokjes die terug worden gegeven
+> - Blokjes worden alijd terug gegeven (ook als er geen resources beschikcbbaar zijn binnen dat blokje)
+> - Ook cermonies (gratis, flits etc) zijn resources
+> - Het kan dus zijn dat een locatie (e.g. trouwzaal) wel beschickbaar is terwijl het niet mogenlijk is om in dat blokje een ceremonie te plannen
+> - Op het moment dat een resource ook maar een seconde geboekt is binnen het blokje is die niet meer beschickbaar en komt die dus niet terug
+> - Naast de beschickbaarheid van locaties kan deze functionaliteit ook worden gebruikt voor de beschickbaarheid van trouwambtenaren (casus ik wil ene bepaald trouw ambtenaar en locaite combinatie welke dagen kan ik dan keizen)
+> 
+> HET VERDIENT EEN WARME AANBEVELING OM DEZE FUNCTIONALITEIT NIET TE GEBRUIKEN VOOR TROUWAMBTENAREN ZONDER DAT ER IS INGELOGD (anders lek je beschikbaarheid)
+
+```json  
+GET {environment}/api/calendar/availiablitycheck?start={datetime}&stop={datetime}&interval=1h&resources_could[]=resource1Uri,&resources_could[]=resource2Uri,&resources_could[]=resource3Uri
+
+{
+}
+
+RESPONCE
+
+{
+  "2022-09-01": [
+    {
+      "start":"2022-09-01:09:00:00",
+      "stop":"2022-09-01:10:00:00",
+      "resources":[
+          "resource1Uri",
+          "resource2Uri",
+          "resource3Uri",
+      ]
+    },
+    {
+      "start":"2022-09-01:10:00:00",
+      "stop":"2022-09-01:11:00:00",
+      "resources":[
+          "resource1Uri",
+          "resource3Uri",
+      ]
+    }
+  ],  
+  "2022-09-02": [
+    {
+      "start":"2022-09-01:09:00:00",
+      "stop":"2022-09-01:10:00:00",
+      "resources":[
+          "resource1Uri",
+          "resource2Uri",
+          "resource3Uri",
+      ]
+    },
+    {
+      "start":"2022-09-01:10:00:00",
+      "stop":"2022-09-01:11:00:00",
+      "resources":[]
+    }
+  ],  
+}
+```
+
+> Voordat je kan kijken welke locaties voor welke producten beschickbaar zijn zullen bijde dus eerst moeten worden opgehaald. Dit gaat aan de hand van PDC (producten diensten combinaties) met andere woorden ceremonies, locaties en eventetueel trouwambtenaren zijn producten die een gemeente aanbied binnen een bepaalde context (catalogus). Hierbij wordt de context gevormd door het wettenlijk kader. Dan weer even simpel gezegd er zijn dus een catalogi "partnerschap","huwelijks" en "omzetting" (waarbij je zou verwachten dat alleen omzetting afwijkende producten kent). Hierbinnen treven we producten van het type "ceremonie","locatie" en "ambtenaar". Waarbinnen de ceremonie leidend is voor de opties met betrekking tot "locaties" en "ambtenaar"Producten kunnen tot meerdere catalogi behoren.
+> 
+> In de praktijk betekend dit dat er een aantal stappen nodig zijn voor het vormen van een dataset. 
+> 1. Ophalen van de ceremonies die mognelijk zijn bij een bepaald huwelijkstype
+> 4. Ophalen van de ceremonies voor dat huwelijkstype
+> 2. Ophalen van de locaties voor dat ceremonie type
+> 3. Ophalen van de ambtenaren voor dat ceremonie type
+> 4. Ophalen van de extra producten voor dat ceremonie type
+> 
+> Dat is natuurlijk omslachtig, alternatief is om de bovenstaande dataset in één keer op te halen aan de hand van 'extend' functionaliteit.
+> `GET {environment}/api/sdg/v1/producten?catalogus=huwelijk&extend[]=gerelateerdeProducten` Dit leverdt dan de 4 ingeregelde ceremonietypen op die ieder in hun gerelateerdeProducten array de mogenlijke locaties, ambtenaren en extra producten bevatten.
+> 
+> Ieder product bevat in zijn root een url property, dat is de resource identifier voor de calender API. Let op! Ceremonies, Locaties en Ambtenaren kennen altijd een beschickbaarheid. Extra producten kunnen een beschickbaarheid hebben (bijvoorbeeld geen duiven loslaten op zondag). Maar het kan ook zijn dat ze niet in de calender voorkomen.
+
+```json  
+GET {environment}/sdg/api/v1/producten?catalogus=huwelijk&extend[]=gerelateerdeProducte
+
+{
+}
+
+RESPONCE
+
+{
+  "results":[
+    {
+    "url": "http://pdc.data.ergens.nl/sdg/api/v1/producten/e94d35b7-2903-4593-8dad-f91753157f54",
+	"uuid": "e94d35b7-2903-4593-8dad-f91753157f54",
+	"upnLabel": "flits/balie huwelijk",
+	"upnUri": "http://standaarden.overheid.nl/owms/terms/",
+	"versie": 1,
+	"publicatieDatum": "2021-03-24T17:23:02",
+	"productAanwezig": false,
+	"productValtOnder": {},
+	"verantwoordelijkeOrganisatie": {
+		"url": "",
+		"owmsIdentifier": "http://standaarden.overheid.nl/owms/terms/Utrecht_(gemeente)",
+		"owmsPrefLabel": "Utrecht",
+		"owmsEndDate": null
+	},
+	"bevoegdeOrganisatie": {
+		"naam": "Deventer",
+		"owmsIdentifier": "http://standaarden.overheid.nl/owms/terms/Utrecht_(gemeente)",
+		"owmsPrefLabel": "Utrecht",
+		"owmsEndDate": null
+	},
+	"catalogus": "huwelijk",
+	"locaties": [],
+	"doelgroep": "burger",
+	"vertalingen": [
+		{
+			"taal": "nl",
+			"productTitelDecentraal": "flits/balie huwelijk",
+			"specifiekeTekst": " snel aan de ballie trouen",
+			"procedureBeschrijving": "U doent online melding en dan gaan we u trouwen",
+			"kostenEnBetaalmethoden": "500,- online of contant aan de ballie",
+			"uitersteTermijn": "",
+			"conditions": "Een flits huwelijk moet 14 dagen voor voltrekking worden gemeld bij de Gemeente",
+			"notice": "",
+			"decentraleProcedureLink": "",
+			"vereisten": "",
+			"bewijs": "",
+			"contact": "",
+			"verwijzingLinks": [ ],
+			"synonyms": [
+				{
+					"synonym": "spoedhuwelijk"
+				},
+			],
+			"wtdBijGeenReactie": "",
+			"datumWijziging": "2021-03-24T17:24:16",
+			"productAanwezigToelichting": "",
+			"productValtOnderToelichting": ""
+		}
+	],
+	"gerelateerdeProducten": [
+      {
+      "url": "http://pdc.data.ergens.nl/sdg/api/v1/producten/e94d35b7-2903-4593-8dad-f91753157f54",
+      "uuid": "e94d35b7-2903-4593-8dad-f91753157f54",
+      "upnLabel": "Ballie",
+      "upnUri": "http://standaarden.overheid.nl/owms/terms/",
+      "versie": 1,
+      "publicatieDatum": "2021-03-24T17:23:02",
+      "productAanwezig": false,
+      "productValtOnder": {},
+      "verantwoordelijkeOrganisatie": {
+          "url": "",
+          "owmsIdentifier": "http://standaarden.overheid.nl/owms/terms/Utrecht_(gemeente)",
+          "owmsPrefLabel": "Utrecht",
+          "owmsEndDate": null
+      },
+      "bevoegdeOrganisatie": {
+          "naam": "Deventer",
+          "owmsIdentifier": "http://standaarden.overheid.nl/owms/terms/Utrecht_(gemeente)",
+          "owmsPrefLabel": "Utrecht",
+          "owmsEndDate": null
+      },
+      "catalogus": "locaties",
+      "locaties": [],
+      "doelgroep": "burger",
+      "vertalingen": [
+          {
+              "taal": "nl",
+              "productTitelDecentraal": "ballie",
+              "specifiekeTekst": "Trouwt aan de balie van de burgelijke stand",
+              "procedureBeschrijving": "Bij binnenkomst melden",
+              "kostenEnBetaalmethoden": "Geen extra kosten",
+              "uitersteTermijn": "",
+              "conditions": "",
+              "notice": "",
+              "decentraleProcedureLink": "",
+              "vereisten": "",
+              "bewijs": "",
+              "contact": "",
+              "verwijzingLinks": [ ],
+              "synonyms": [
+                  {
+                      "synonym": "spoedhuwelijk"
+                  },
+              ],
+              "wtdBijGeenReactie": "",
+              "datumWijziging": "2021-03-24T17:24:16",
+              "productAanwezigToelichting": "",
+              "productValtOnderToelichting": ""
+          }
+      ],
+      "gerelateerdeProducten": []
+    },
+    ... etc voor ambtenaren en extra's
+	 
+	 ]
+  },
+  ...
+}
+```
 **POST API**
 Deze gegevens worden vanaf deze stap naar de server verstuurd.
 - datum
 - tijdstip
 - type
+
+> De backend dwingt geen geldige invoer af zoals gemeld onder **Rekening houden met** er zouden immers nog correcties kunnen plaatsvinden en niet alle vallidaties kunnen worden uitgevoerd op een onvolledige dataset. Ipv daarvan houdt de backend een checklist array bij waarin de resultaten van de verschillende controlles tijdens het proces kunnen worden gevonden
+> 
+> Voor de backend is datum en tijdstip 1 veld
+> 
+> Voor de backend zijn type en ceremonie andere dingen. Het 1 gaat over wat je juridisch wilt (huwelijk, omzetten, partneschap) ofwel het wettenlijk kader. Het andere gaat over de beleving waarin je dat wilt gieten (flitshuwelijk, gratis huwelijk, eenvoudig
+huwelijk, uitgebreid huwelijk) ofwel de producten die de gemeente aanbied. Het wettenlijk kader staat vast en is niet configureerbaar. De producten waarmee invulling wordt gegeven aan het wettenlijk kader zijn per gemeente verschillend en wel configureerbaar. Deze worden ontrrokken uit het PDC. 
+
+```json  
+PUT {environment}/api/huwelijk/{id}
+
+{
+  "moment":"{datetime voor eht start moment van het huwelijk",
+  "ceremonie":"{uuid of uri van gekozen het gekozen product voor cermonie"
+}
+
+RESPONCE
+
+{
+  ... het volledige huwelijks object.
+}
+```
+
+**Acceptatie critteria Backend**
+- [ ] Moment en ceremonie kunnen worden geset
+- [ ] De backend controleerd of het moment minimaal 2 weken in de toekomst ligt (en noteerd het resultaat in de checklist)
+- [ ] De backend controleerd of de gekozen cermonie op het gekozen moment en tijdschip beschickbaar is (en noteerd het resultaat in de checklist)
+- [ ] De backend bevat voorbeeld data voor locaties, ambtenaren en extra producten bij de cermonies gratis, flist/balie huwelijk, envoudig en uitgebreid trouwen
+- [ ] Bij het selecteren van producten die kosten met zich mee brengen wordt de property kosten herberekend
 
 ### Scherm 3: overzicht keuze, door naar DigiD
 
@@ -117,16 +387,34 @@ Deze informatie is nodig om de pagina te tonen:
 - locatie
 - gekozen tijdstip
 
+> moment, kosten en type zitten standaard in het huwelijks object. Voor cermonie, ambtenaar en locatie wordt in princiepe alleen de verwijzing getoond. De volledige objecten kunnen echter het bericht worden ingetrokken met de extend functionaliteit.
+
+```json  
+GET {environment}/api/huwelijk/{id}?extend[]=ambentaar&xtend[]=locatie&xtend[]=cermonie
+
+{
+}
+
+RESPONCE
+
+{
+  ... het volledige huwelijks object inc type, cermonie, ambtenaar en locatie.
+}
+```
+
 **POST API**:
 
-Een POST naar een URL met de intentie om te redirecten naar DigiD. Gegevens die
-de server moet weten:
-naar welke URLs geredirect moet worden wanneer DigiD een success is
-de URL van de foutmelding pagina
+Een POST naar een URL met de intentie om te redirecten naar DigiD. Gegevens die de server moet weten: naar welke URLs geredirect moet worden wanneer DigiD een success is de URL van de foutmelding pagina
 
-Unhappy flow
+> De gebruiker kan worden geforeward naar `GET {environment}/user/inloggen/digid`. Foreward en error urls zijn onderdeel van de configuratie en worden vanuit veiligheids oogpunt niet live uitgewisseld. Na inloggen word de gebruiker doorgezet naar de foreward url met een `token`query parameter met daarin een token. Dit token kan worden gebruikt om via `GET {environment}/user/inloggen/claim/token` eenmalig een JWT token op te halen. Dit JWT token dient vervolgens in de `Authorisation` header te worden mee gegeven in opvolgende calls om de gebruiker te identificeren. 
 
-DigiD is down.
+**Unhappy flow**
+- DigiD is down.
+
+
+**Acceptatie critteria Backend**
+- Er kan worden doorverwezen naar DigiD
+
 
 ### Scherm: inloggen met DigiD
 
@@ -138,7 +426,14 @@ DigiD is down.
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/03b-inloggen-digid.html)
 
-![img_5.png](img_5.png)
+![img_5.png](img_5.png)>
+
+> Zie [Scherm 3: overzicht keuze, door naar DigiD]() 
+
+
+**Acceptatie critteria Backend**
+- Er kanworden ingelogd met digispoof
+
 
 ### Scherm 4: contactgegevens invullen en gegevens controleren
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/04-melding-voorgenomen-huwelijk-anne.html)
@@ -176,6 +471,41 @@ Deze pagina verstuurt het volgende naar de server:
 telefoonnummer - optioneel
 e-mailadres - verplicht
 
+> Voordat de persoonsgegeven van een partner inzichtenlijk zijn moeten deze eerst worden gekopeld huwelijk, het koppelen van iedereen die (juridisch) moet instemmen gebeurd via een assent object.
+
+```json  
+PUT {environment}/api/huwelijk/{id}
+
+{
+  "partners":[
+    {
+      "name":"Partner bij huwelijk",
+      "description":"U wordt uitgenodigd als parten bij een huwlijk",
+      "resource":"{uri van het huwelijk]",
+      "forwardUrl":"",
+      "property":"partners",
+      "process":"{url die gebruikt kan worden om de assent te accepteren}",
+      "klant":"{uri of geheel klantobject}",
+      "status":"",
+      "requester":"{bsn van ingelogde gebruiker}"
+    }
+  ]
+}
+
+RESPONCE
+
+{
+  ... het volledige huwelijks object, inclusief assents
+}
+```
+
+> Nadat de assent is toegekent kunnen de BRP gegevens van de gene die heft ingestemd via de assent worden opgehaald aan de hand van de extend functionaliteit.
+
+**Acceptatie critteria Backend**
+- [ ] Als het BSN nummer van de aanvrager en de klant gelijk is word de accent automatisch op granted gezet.
+- [ ] In andere gevalen word de status op `requested` gezet
+
+
 ### Scherm 5: partner uitnodigen
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/05-vraag-sanne.html)
@@ -184,10 +514,40 @@ e-mailadres - verplicht
 
 **Opmerkingen**:
 
-kan misschien met QR code in plaats van link in e-mail, geen latency, geen junk-
-mail risico
+kan misschien met QR code in plaats van link in e-mail, geen latency, geen junk- mail risico persoonsgegevens van partner komen uit DigiD, ipv zelf ingevuld
 
-persoonsgegevens van partner komen uit DigiD, ipv zelf ingevuld
+> Het uitnodigen van een partner gaat door het indienden van een assent verzoek
+
+```json  
+PUT {environment}/api/huwelijk/{id}
+
+{
+  "partners":[
+    {
+      "name":"Partner bij huwelijk",
+      "description":"U wordt uitgenodigd als parten bij een huwlijk",
+      "resource":"{uri van het huwelijk]",
+      "forwardUrl":"",
+      "property":"partners",
+      "process":"{url die gebruikt kan worden om de assent te accepteren}",
+      "klant":"{uri of geheel klantobject}"
+    }
+  ]
+}
+
+RESPONCE
+
+{
+  ... het volledige huwelijks object, inclusief assents
+}
+```
+
+**Acceptatie critteria Backend**
+- [ ] Bij het aanmaken van de assent wordt er een email/smsm verstuurd naar de toesteminggevenden (afhankenlijk van of email en tel bekend zijn)
+- [ ] Als zowel email als telefoon nr niet bekend zijn wordt er een foutmelding gegenereerd
+- [ ] Er wordt een assent secret gegenereerd
+
+> Na het aanmaken van het assent verzoek word er een assend id en secret teruggegeven. deze kunnen worden gebruikt om de assent later op te halen. Met andere worden de frontend kan een link genereren die met een QR code, whatsapp of ander kanaal kan worden verstuurd de een ander persoon in staat steld om in te loggen en een assent te accepteren. Let op! Assent kunnen alleen van status worden verwisseld door gebruikers die zijn ingelogd met DigiD en waarvan het BSN nummer van de gebruiker overeenkomt met het BSN nummer van de assent.
 
 ### Scherm: getuigen aanmelden
 
@@ -195,6 +555,48 @@ persoonsgegevens van partner komen uit DigiD, ipv zelf ingevuld
 
 ![img_16.png](img_16.png)
 
+> Het toevoegen van getuigen gaat via het aanvragen van een assent voor die getuigen. Het enige verschil is hierbij dat getuigen bestaad uit een array van partner (geidentificeerd aan de uri van hun assent).
+
+```json  
+PUT {environment}/api/huwelijk/{id}
+
+{
+  "getuigen":{
+    "{uri partner 1}":[
+      {
+        "name":"Getuige bij huwelijk",
+        "description":"U wordt uitgenodigd als getuige bij een huwlijk",
+        "resource":"{uri van het huwelijk]",
+        "forwardUrl":"",
+        "property":"partners",
+        "process":"{url die gebruikt kan worden om de assent te accepteren}",
+        "klant":"{uri of geheel klantobject}"
+      }
+    ],    
+    "{uri partner 1}":[
+      {
+        "name":"Getuige bij huwelijk",
+        "description":"U wordt uitgenodigd als getuige bij een huwlijk",
+        "resource":"{uri van het huwelijk]",
+        "forwardUrl":"",
+        "property":"partners",
+        "process":"{url die gebruikt kan worden om de assent te accepteren}",
+        "klant":"{uri of geheel klantobject}"
+      }
+    ],    
+  }
+}
+
+RESPONCE
+
+{
+  ... het volledige huwelijks object, inclusief assents
+}
+```
+
+**Acceptatie critteria Backend**
+- [ ] In de array mogen alleen key's voorkomen die ook als assent onder partners bestaan (anders foutmelding)
+- [ ] Een partner array mag niet meer dan twee getuigen bevatten (anders foutmelding)
 
 ### Scherm: controles uitgevoerd
 
@@ -202,9 +604,11 @@ persoonsgegevens van partner komen uit DigiD, ipv zelf ingevuld
 
 ![img_9.png](img_9.png)
 
-**Happy flow**: alle controles zijn geslaagd
+**Happy flow**: 
+- alle controles zijn geslaagd
+
 **Unhappy flow**
-één of meerdere checks zijn niet geslaagd
+- één of meerdere checks zijn niet geslaagd
 
 **GET API**:
 Deze gegevens zijn nodig om de pagina te tonen:
@@ -216,6 +620,24 @@ Deze gegevens zijn nodig om de pagina te tonen:
 
 Deze pagina verstuurt zelf geen informatie, maar de server moet wel weten naar
 welke URLs geredirect moet worden na een succesvolle of mislukte betaling.
+
+> De huwelijks service voerd zelf continu checks uit aan de hand van de voorligende data en slaat de resultaten daarvan op in de checklist array. Deze checklist is continu beschikbaar binnen het huwelijks object
+
+```json  
+GET {environment}/api/huwelijk/{id}
+
+{
+}
+
+RESPONCE
+
+{
+  ... het volledige huwelijks object waaronder de checklist
+}
+```
+
+**Acceptatie critteria Backend**
+- [ ] De checklist wordt correct bijgehouden en uitgevoerd op het moment dat het huwelijks object wordt bijgewerkt (zie api documentatie voor deails)
 
 ### Scherm: wachten op partner
 
@@ -235,6 +657,11 @@ welke URLs geredirect moet worden na een succesvolle of mislukte betaling.
 - Gegevens om bestaande informatie aan te passen.
 - naam partner
 - e-mailadres partners
+
+> Euh deze stap bestaad niet toch? een gebruiker kan gewoon door met de rest van zijn huwelijk exclusief het versturen van de melding?
+
+**Acceptatie critteria Backend**
+-
 
 ### Scherm: betaling gelukt
 
@@ -269,6 +696,11 @@ URL om reservering te bekijken
 
 ![img_14.png](img_14.png)
 
+> Assents kunnen niet meer worden aangepast nadat deze zijn geacepteerd of afgewezen.  Tot die tijd kunnen DE KLANTGEGEVENS email en telefoonnummer worden aangepast via `PUT {environment}/assent/api/v1/{id}`
+
+**Acceptatie critteria Backend**
+- [ ] Email en telfoonnummer kunnen via een assent worden aangepast totdat deze uit de status requested is gekomen
+
 ### Scherm: extra bestellen
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/11b-extra.html)
@@ -291,11 +723,55 @@ variant titel
 variant prijs
 variant ID
 
-**POST API**:
-één of meerdere product ID + mogelijk variant ID
-Unhappy flow
+> Extra's zijn onderdeel van eht PDC en kunnen via de eerder genoemde PDC call worden opgehaald
 
-Storing in betaalservice.
+**POST API**:
+- één of meerdere product ID + mogelijk variant ID
+
+**Unhappy flow**:
+- Storing in betaalservice.
+
+> Extra's toevoegen en het betalen van een huwewlijk zijn andere acties. Die kunnen niet in dezelfde stap worden afgerond. Extra's toevoegen is een kwestie van PUT op het huwelijks opbject met de URI's van de gewenste extra's. Het is neit mogenlijk 1 extra meerdere keren te bestellen
+
+```json  
+PUT {environment}/api/huwelijk/{id}
+
+{
+  "producten":[
+    "{uri van extra 1}",
+    "{uri van extra 2}"
+   ]
+}
+
+RESPONCE
+
+{
+  ... het volledige huwelijks object
+}
+```
+
+> Voor het creëren van een betaal link geld dat de status van een huwelijk naar 'reported' moet worden gezet, als alle checks een go zijn wordt er dan een order en factuur gemaakt.
+
+```json  
+PUT {environment}/api/huwelijk/{id}
+
+{
+  "status":"reported"
+}
+
+RESPONCE
+
+{
+  ... het volledige huwelijks object inc order met betaal link
+}
+```
+
+**Acceptatie critteria Backend**
+- Na het toevoegen van extra's wordt de prijs van het huwelijk herberekend
+- Een huwelijk kan alleen op de status reported worden gezet als alle checks go zijn
+- Nadat een huwelijk de status reported heeft gekregen kan het huwelijk niet meer door de burger worden aangepast
+- Nadat de betaallink in de order is gebruikt om te betalen, en de betaling is geregistreerd, wordt het huwelijk op confirmed gezet
+- Nadat het huwelijk op confirmed wordt gezet wordt en een email + factuur verstuurd naar de partners
 
 ### Scherm: annuleer reservering
 
@@ -311,7 +787,7 @@ Storing in betaalservice.
 > - Wie mag dit doen? bijde partners? inititatiefnemer?
 > - Hoe gaan we de financiele afdeling op de hoogte brengen?
 
-```json voor 
+```json  
 PUT {environment}/api/huwelijk/{id}
 
 {
@@ -347,7 +823,7 @@ E-mail: bevestiging annulering
 
 > Wie leverdt de email templates aan?
 
-**Acceptatie critteria  Backend**
+**Acceptatie critteria Backend**
 - [ ] Verstuurde mails voldoen aan gestelde templates
 
 ## Techniek
