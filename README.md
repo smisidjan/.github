@@ -63,6 +63,7 @@ In de volgende stappen worden de benodigd API calls per stap doorgelicht
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/02b-trouwen-plannen-april.html)
 
 ![img_2.png](img_2.png)
+
 ![img_3.png](img_3.png)
 
 **Rekening houden met**:
@@ -80,7 +81,7 @@ In de volgende stappen worden de benodigd API calls per stap doorgelicht
 - einddatum (optioneel, anders uiterste datum in toekomst - nu maximaal 1 jaar in de toekomst)
 
 
-Response:
+**Response**:
 lijst met unieke combinaties van datum + tijdstip + type
 extra velden: locatie
 Afspraken over identifiers:
@@ -298,10 +299,36 @@ Storing in betaalservice.
 
 ### Scherm: annuleer reservering
 
-**Opmerking**: de knop "Annuleer reservering" is een beetje onfortuinlijk, omdat
-"Annuleer" ook vaak betekent "Ik wil die schermpje niet, doe niets". Misschien
-duidelijker om "Annuleren" (secondary button) en "Geen huwelijk reserveren"
-(primary button) te doen, of iets dergelijks.
+**Opmerking**: de knop "Annuleer reservering" is een beetje onfortuinlijk, omdat "Annuleer" ook vaak betekent "Ik wil die schermpje niet, doe niets". Misschien duidelijker om "Annuleren" (secondary button) en "Geen huwelijk reserveren" (primary button) te doen, of iets dergelijks.
+
+> De vraag is ook even wat annuleren doet qua busnes logica, voor nu gaan we uit van
+> - Verwijderen boeking in de calender voor locatie en trouwambtenaar
+> - Mails versturen (zie Scherm: bevestiging annulering)
+> - Status huwelijk omzetten naar geanuleerd
+>
+> **Overige vragen**
+> - Zijn er er casusen waarin een annulering niet mag worden verwerkt? (los van huwelijk is reeds voltrokken)
+> - Wie mag dit doen? bijde partners? inititatiefnemer?
+> - Hoe gaan we de financiele afdeling op de hoogte brengen?
+
+```json voor 
+PUT {environment}/api/huwelijk/{id}
+
+{
+  "status": "cancelled"
+}
+
+RESPONCE
+
+{
+  ... het volledige huwelijks object
+}
+```
+
+**Acceptatie critteria  Backend**
+- [ ] Bij het proberen te setten van de status "cancelled" controleerd de backend of is voldaan aan voorwaarden en rechten
+- [ ] Na het zetten van de status worden de genoemde mails verstuurd
+- [ ] Na het zetten van de status worden genoemde agenda reserveringen verwijderd
 
 ### Scherm: bevestiging annulering
 
@@ -311,9 +338,17 @@ duidelijker om "Annuleren" (secondary button) en "Geen huwelijk reserveren"
 
 E-mail: bevestiging annulering
 
-e-mail aan partners
-andere e-mail aan getuigen
-Details nader te bepalen.
+- e-mail aan partners
+- andere e-mail aan getuigen
+- andere e-mail aan trouwambtenaar <- Toevoeging RLI
+- andere e-mail aan locatiemanager <- Toevoeging RLI
+- andere e-mail aan afdeling burgerzaken <- Toevoeging RLI
+- Details nader te bepalen.
+
+> Wie leverdt de email templates aan?
+
+**Acceptatie critteria  Backend**
+- [ ] Verstuurde mails voldoen aan gestelde templates
 
 ## Techniek
 
