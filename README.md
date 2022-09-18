@@ -2,7 +2,23 @@
 In de volgende stappen worden de benodigd API calls per stap doorgelicht
 
 
-## Scherm 0: Introductie
+## Schermen
+- [Scherm 0: Introductie](#scherm-0-introductie)
+- [Scherm 1: Huwelijk of geregistreerd partnerschap?](#scherm-1-huwelijk-of-geregistreerd-partnerschap)
+- [Scherm 2: datum kiezen](#scherm-2-datum-kiezen)
+- [Scherm 3: overzicht keuze, door naar DigiD ](#scherm-3-overzicht-keuze-door-naar-digid)
+- [Scherm: inloggen bij DigiD](#scherm-inloggen-bij-digid)
+- [Scherm 4: contactgegevens invullen en gegevens controleren](#scherm-4-contactgegevens-invullen-en-gegevens-controleren)
+- [Scherm 5: partner uitnodigen](#scherm-5-partner-uitnodigen)
+- [Scherm: getuigen aanmelden](#scherm-getuigen-aanmelden)
+- [Scherm: controles uitgevoerd](#scherm-controles-uitgevoerd)
+- [Scherm: wachten op partner](#scherm-wachten-op-partner)
+- [Scherm: betaling gelukt](#scherm-betaling-gelukt)
+- [Scherm: getuigen aanpassen](#scherm-getuigen-aanpassen)
+- [Scherm: extra bestellen](#scherm-extra-bestellen)
+- [Scherm: annuleer reservering](h#scherm-annuleer-reservering)
+
+### Scherm 0: Introductie
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/index.html)
 
@@ -26,7 +42,7 @@ In de volgende stappen worden de benodigd API calls per stap doorgelicht
 **Opmerking**:
 kun je ook een ambtenaar kiezen?
 
-## Scherm 1: Huwelijk of geregistreerd partnerschap?
+### Scherm 1: Huwelijk of geregistreerd partnerschap?
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/01-trouwen-of-partnerschap.html)
 
@@ -41,7 +57,7 @@ POST API:
 identifier voor keuze tussen trouwen of geregistreerd partnerschap
 Er zijn afspraken nodig over de identifier van het type.
 
-## Scherm 2: datum kiezen
+### Scherm 2: datum kiezen
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/02b-trouwen-plannen-april.html)
 
@@ -80,7 +96,7 @@ datum
 tijdstip
 type
 
-## Scherm 3: overzicht keuze, door naar DigiD
+### Scherm 3: overzicht keuze, door naar DigiD
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/03-inloggen-digid.html)
 
@@ -118,12 +134,12 @@ DigiD is down.
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/03-inloggen-digid.html)
 ![img_4.png](img_4.png)
 
-## Scherm: inloggen bij DigiD
+### Scherm: inloggen bij DigiD
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/03b-inloggen-digid.html)
 ![img_5.png](img_5.png)
 
-## Scherm 4: contactgegevens invullen en gegevens controleren
+### Scherm 4: contactgegevens invullen en gegevens controleren
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/04-melding-voorgenomen-huwelijk-anne.html)
 ![img_6.png](img_6.png)
 ![img_7.png](img_7.png)
@@ -160,7 +176,7 @@ Deze pagina verstuurt het volgende naar de server:
 telefoonnummer - optioneel
 e-mailadres - verplicht
 
-## Scherm 5: partner uitnodigen
+### Scherm 5: partner uitnodigen
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/05-vraag-sanne.html)
 ![img_8.png](img_8.png)
@@ -172,13 +188,13 @@ mail risico
 
 persoonsgegevens van partner komen uit DigiD, ipv zelf ingevuld
 
-## Scherm: getuigen aanmelden
+### Scherm: getuigen aanmelden
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/07b-getuigen-extra.html)
 
 
 
-## Scherm: controles uitgevoerd
+### Scherm: controles uitgevoerd
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/08-check05.html)
 
@@ -197,7 +213,7 @@ POST API
 Deze pagina verstuurt zelf geen informatie, maar de server moet wel weten naar
 welke URLs geredirect moet worden na een succesvolle of mislukte betaling.
 
-## Scherm: wachten op partner
+### Scherm: wachten op partner
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/06-wacht-op-sanne.html)
 ![img_10.png](img_10.png)
@@ -284,7 +300,7 @@ Opmerking: de knop "Annuleer reservering" is een beetje onfortuinlijk, omdat
 duidelijker om "Annuleren" (secondary button) en "Geen huwelijk reserveren"
 (primary button) te doen, of iets dergelijks.
 
-###Scherm: bevestiging annulering
+### Scherm: bevestiging annulering
 
 [Bekijk prototype ](https://huwelijk.utrecht.eend.nl/docs/site/huwelijksplanner/12-huwelijk-geannuleerd.html)
 
@@ -294,11 +310,8 @@ e-mail aan partners
 andere e-mail aan getuigen
 Details nader te bepalen.
 
-Techniek
+## Techniek
 
-De pagina moet voldoen aan DigiD richtlijnen rondom een strikte Content-
-Security-Policy . We willen kiezen om een server-side rendering te doen met
-
-React, zodat we een nonce kunnen genereren voor elke pagina.
+De pagina moet voldoen aan DigiD richtlijnen rondom een strikte Content-Security-Policy . We willen kiezen om een server-side rendering te doen met React, zodat we een nonce kunnen genereren voor elke pagina.
 
 
