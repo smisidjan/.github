@@ -1,6 +1,9 @@
 # Huwelijksplanner
 In de volgende stappen worden de benodigd API calls per stap doorgelicht
 
+## Volledige API documentatie
+Zie de [stoplight api documentatie](https://conduction.stoplight.io/docs/huwelijksplanner/2ecf7c6cfedd7-crieer-een-nieuw-huwelijk).
+
 ## Schermen
 - [Scherm 0: Introductie](#scherm-0-introductie)
 - [Scherm 1: Huwelijk of geregistreerd partnerschap?](#scherm-1-huwelijk-of-geregistreerd-partnerschap)
