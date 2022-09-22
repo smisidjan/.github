@@ -154,7 +154,7 @@ huwelijk" - "uitgebreid huwelijk"
 > HET IS AANBEVOLEN OM DEZE FUNCTIONALITEIT NIET TE GEBRUIKEN VOOR TROUWAMBTENAREN ZONDER DAT ER IS INGELOGD (anders lek je beschikbaarheid)
 
 ```json  
-GET {environment}/api/calendar/availiablitycheck?start={datetime}&stop={datetime}&interval=1h&resources_could[]=resource1Uri,&resources_could[]=resource2Uri,&resources_could[]=resource3Uri
+GET {environment}/api/calendar/availabiltycheck?start={datetime}&stop={datetime}&interval=1hour&resources_could[]=resource1Uri,&resources_could[]=resource2Uri,&resources_could[]=resource3Uri
 
 {
 }
